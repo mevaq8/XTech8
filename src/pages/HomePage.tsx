@@ -12,8 +12,8 @@ export default function HomePage() {
   return (
     <main>
       <BannerSlider />
-      <SuperOffers />
       <TrustStrip />
+      <SuperOffers />
       <CategoryNav />
       <ProductGrid />
       <WideCtaBanner />
