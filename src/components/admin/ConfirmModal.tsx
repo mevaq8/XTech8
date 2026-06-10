@@ -49,6 +49,7 @@ export function ConfirmModal({
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
                     <button
+                      type="button"
                       onClick={onCancel}
                       className="text-slate-400 hover:text-slate-600 transition-colors"
                     >
@@ -61,6 +62,7 @@ export function ConfirmModal({
             </div>
             <div className="px-6 py-4 bg-slate-50 flex justify-end gap-3">
               <button
+                type="button"
                 onClick={onCancel}
                 disabled={isLoading}
                 className="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors font-medium"
@@ -68,6 +70,7 @@ export function ConfirmModal({
                 {cancelText}
               </button>
               <button
+                type="button"
                 onClick={onConfirm}
                 disabled={isLoading}
                 className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors font-medium disabled:opacity-50"

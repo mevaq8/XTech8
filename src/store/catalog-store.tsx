@@ -42,6 +42,7 @@ function mapProduct(product: AdminProduct, categories: AdminCategory[]): Product
     description: product.description ?? "",
     shortDescription: product.short_desc ?? "",
     images: product.images ?? [],
+    isSuperOffer: Boolean(product.is_super_offer),
   };
 }
 

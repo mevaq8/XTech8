@@ -1,7 +1,8 @@
 const CATALOG_REFRESH_EVENT = "mevaq:catalog-refresh";
 const SITE_SETTINGS_REFRESH_EVENT = "mevaq:site-settings-refresh";
+const BANNER_REFRESH_EVENT = "mevaq:banner-refresh";
 
-type RefreshEventName = typeof CATALOG_REFRESH_EVENT | typeof SITE_SETTINGS_REFRESH_EVENT;
+type RefreshEventName = typeof CATALOG_REFRESH_EVENT | typeof SITE_SETTINGS_REFRESH_EVENT | typeof BANNER_REFRESH_EVENT;
 
 function emitRefresh(eventName: RefreshEventName) {
   if (typeof window === "undefined") return;
@@ -28,4 +29,12 @@ export function emitSiteSettingsRefresh() {
 
 export function onSiteSettingsRefresh(callback: () => void) {
   return onRefresh(SITE_SETTINGS_REFRESH_EVENT, callback);
+}
+
+export function emitBannerRefresh() {
+  emitRefresh(BANNER_REFRESH_EVENT);
+}
+
+export function onBannerRefresh(callback: () => void) {
+  return onRefresh(BANNER_REFRESH_EVENT, callback);
 }

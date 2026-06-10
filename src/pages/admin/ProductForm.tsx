@@ -34,6 +34,7 @@ const schema = z.object({
   short_desc: z.string().max(200, "Maksimum 200 simvol").nullable().optional(),
   description: z.string().nullable().optional(),
   is_active: z.boolean().default(true),
+  is_super_offer: z.boolean().default(false),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -97,11 +98,13 @@ export function ProductForm() {
       short_desc: "",
       description: "",
       is_active: true,
+      is_super_offer: false,
     },
   });
 
   const nameValue = watch("name");
   const isActive = watch("is_active");
+  const isSuperOffer = watch("is_super_offer");
 
   useEffect(() => {
     if (!slugManuallyEdited && nameValue) {
@@ -131,6 +134,7 @@ export function ProductForm() {
           setValue("short_desc", product.short_desc);
           setValue("description", product.description);
           setValue("is_active", product.is_active);
+          setValue("is_super_offer", product.is_super_offer ?? false);
           setImages(product.images || []);
           setSpecRows(specsToRows(product.specs));
           setSlugManuallyEdited(true);
@@ -359,6 +363,18 @@ export function ProductForm() {
 
         <FormSection title="Sekiller">
           <ImageUploader images={images} onChange={setImages} />
+        </FormSection>
+
+        <FormSection title="Super Təkliflər">
+          <div className="flex items-center gap-4">
+            <StatusToggle
+              isActive={isSuperOffer}
+              onChange={(active) => { setValue("is_super_offer", active); return Promise.resolve(); }}
+            />
+            <span className="text-sm text-slate-600">
+              Super Təkliflər bölməsinə əlavə et
+            </span>
+          </div>
         </FormSection>
 
         <FormSection title="Status">

@@ -44,6 +44,19 @@ create table if not exists public.products (
   specs jsonb not null default '{}'::jsonb,
   images text[] not null default '{}',
   is_active boolean not null default true,
+  is_super_offer boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.banners (
+  id uuid primary key default gen_random_uuid(),
+  image_url text not null,
+  category text,
+  title text,
+  subtitle text,
+  link_url text,
+  sort_order integer not null default 0,
+  is_active boolean not null default true,
   created_at timestamptz not null default now()
 );
 
@@ -126,13 +139,18 @@ create index if not exists idx_categories_active_sort on public.categories(is_ac
 create index if not exists idx_products_slug on public.products(slug);
 create index if not exists idx_products_category on public.products(category_id);
 create index if not exists idx_products_active_stock on public.products(is_active, stock);
+create index if not exists idx_products_super_offer on public.products(is_super_offer, is_active, stock);
 create index if not exists idx_products_created_at on public.products(created_at desc);
+create index if not exists idx_banners_active_sort on public.banners(is_active, sort_order);
 
 create index if not exists idx_orders_created_at on public.orders(created_at desc);
 create index if not exists idx_settings_key on public.settings(key);
 
 alter table public.products
 add column if not exists specs jsonb not null default '{}'::jsonb;
+
+alter table public.products
+add column if not exists is_super_offer boolean not null default false;
 
 -- ============================================================
 -- Realtime sync for storefront updates
@@ -144,6 +162,7 @@ add column if not exists specs jsonb not null default '{}'::jsonb;
 alter table public.products replica identity full;
 alter table public.categories replica identity full;
 alter table public.settings replica identity full;
+alter table public.banners replica identity full;
 
 do $do$
 begin
@@ -177,6 +196,16 @@ begin
     ) then
       execute 'alter publication supabase_realtime add table public.settings';
     end if;
+
+    if not exists (
+      select 1
+      from pg_publication_tables
+      where pubname = 'supabase_realtime'
+        and schemaname = 'public'
+        and tablename = 'banners'
+    ) then
+      execute 'alter publication supabase_realtime add table public.banners';
+    end if;
   end if;
 end;
 $do$;
@@ -209,6 +238,7 @@ set
 alter table public.profiles enable row level security;
 alter table public.categories enable row level security;
 alter table public.products enable row level security;
+alter table public.banners enable row level security;
 alter table public.orders enable row level security;
 alter table public.settings enable row level security;
 
@@ -218,6 +248,8 @@ drop policy if exists "categories_public_read_active" on public.categories;
 drop policy if exists "categories_admin_all" on public.categories;
 drop policy if exists "products_public_read_active" on public.products;
 drop policy if exists "products_admin_all" on public.products;
+drop policy if exists "banners_public_read_active" on public.banners;
+drop policy if exists "banners_admin_all" on public.banners;
 drop policy if exists "orders_admin_all" on public.orders;
 drop policy if exists "settings_public_read" on public.settings;
 drop policy if exists "settings_admin_all" on public.settings;
@@ -261,6 +293,19 @@ using (is_active = true or auth.role() = 'authenticated');
 
 create policy "products_admin_all"
 on public.products
+for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "banners_public_read_active"
+on public.banners
+for select
+to anon, authenticated
+using (is_active = true or auth.role() = 'authenticated');
+
+create policy "banners_admin_all"
+on public.banners
 for all
 to authenticated
 using (true)

@@ -16,6 +16,7 @@ export interface Product {
   description: string;
   shortDescription: string;
   images: string[];
+  isSuperOffer: boolean;
 }
 
 export interface CartItem {

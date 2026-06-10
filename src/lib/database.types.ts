@@ -75,6 +75,7 @@ export interface Database {
           specs: Json;
           images: string[];
           is_active: boolean;
+          is_super_offer: boolean;
           created_at: string;
         };
         Insert: {
@@ -90,6 +91,7 @@ export interface Database {
           specs?: Json;
           images?: string[];
           is_active?: boolean;
+          is_super_offer?: boolean;
           created_at?: string;
         };
         Update: {
@@ -104,6 +106,42 @@ export interface Database {
           description?: string | null;
           specs?: Json;
           images?: string[];
+          is_active?: boolean;
+          is_super_offer?: boolean;
+          created_at?: string;
+        };
+      };
+      banners: {
+        Row: {
+          id: string;
+          image_url: string;
+          category: string | null;
+          title: string | null;
+          subtitle: string | null;
+          link_url: string | null;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          image_url: string;
+          category?: string | null;
+          title?: string | null;
+          subtitle?: string | null;
+          link_url?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          image_url?: string;
+          category?: string | null;
+          title?: string | null;
+          subtitle?: string | null;
+          link_url?: string | null;
+          sort_order?: number;
           is_active?: boolean;
           created_at?: string;
         };

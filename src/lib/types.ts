@@ -30,8 +30,21 @@ export interface Product {
   specs: Record<string, string>;
   images: string[];
   is_active: boolean;
+  is_super_offer: boolean;
   created_at: string;
   category?: Category;
+}
+
+export interface Banner {
+  id: string;
+  image_url: string;
+  category: string | null;
+  title: string | null;
+  subtitle: string | null;
+  link_url: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
 }
 
 export interface OrderItem {
