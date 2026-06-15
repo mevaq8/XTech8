@@ -5,7 +5,7 @@ export default function CartIcon({ iconClassName = "text-primary" }: { iconClass
   const { totalItems } = useCart();
 
   return (
-    <Link to="/cart" className="relative p-2 rounded-xl hover:bg-slate-100/20 transition-colors">
+    <Link to="/cart" className="relative flex h-10 w-10 items-center justify-center rounded-lg hover:bg-slate-100 transition-colors">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName}>
         <circle cx="9" cy="21" r="1" />
         <circle cx="20" cy="21" r="1" />

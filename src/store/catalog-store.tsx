@@ -4,9 +4,15 @@ import { onCatalogRefresh } from "@/lib/catalog-events";
 import type { Category as AdminCategory, Product as AdminProduct } from "@/lib/types";
 import type { Product } from "@/types";
 
+interface CatalogCategory {
+  slug: string;
+  name: string;
+  icon_url: string | null;
+}
+
 interface CatalogContextType {
   products: Product[];
-  categories: { slug: string; name: string }[];
+  categories: CatalogCategory[];
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -46,12 +52,20 @@ function mapProduct(product: AdminProduct, categories: AdminCategory[]): Product
   };
 }
 
-function buildCategories(databaseCategories: AdminCategory[]) {
-  const allCategory = { slug: "all", name: "Butun mehsullar" };
+function buildCategories(databaseCategories: AdminCategory[]): CatalogCategory[] {
+  const allCategory: CatalogCategory = {
+    slug: "all",
+    name: "Bütün məhsullar",
+    icon_url: null,
+  };
 
   const databaseItems = [...databaseCategories]
     .sort((a, b) => a.sort_order - b.sort_order)
-    .map((category) => ({ slug: category.slug, name: category.name }));
+    .map((category) => ({
+      slug: category.slug,
+      name: category.name,
+      icon_url: category.icon_url ?? null,
+    }));
 
   return [allCategory, ...databaseItems];
 }

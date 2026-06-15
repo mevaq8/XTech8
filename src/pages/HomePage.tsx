@@ -1,6 +1,5 @@
-import BannerSlider from "@/components/home/BannerSlider";
+import HeroSection from "@/components/home/HeroSection";
 import SuperOffers from "@/components/home/SuperOffers";
-import TrustStrip from "@/components/home/TrustStrip";
 import CategoryNav from "@/components/home/CategoryNav";
 import ProductGrid from "@/components/home/ProductGrid";
 import WideCtaBanner from "@/components/home/WideCtaBanner";
@@ -11,8 +10,7 @@ import CustomerConfidence from "@/components/home/CustomerConfidence";
 export default function HomePage() {
   return (
     <main>
-      <BannerSlider />
-      <TrustStrip />
+      <HeroSection />
       <SuperOffers />
       <CategoryNav />
       <ProductGrid />

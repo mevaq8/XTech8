@@ -30,7 +30,7 @@ export default function CartSummary() {
       </div>
       <button
         onClick={handleCheckout}
-        className="w-full py-4 bg-accent text-white font-inter font-semibold text-base rounded-xl hover:bg-[#16A34A] hover:shadow-[0_0_30px_rgba(34,197,94,0.35)] transition-all duration-200 active:scale-[0.98] cursor-pointer"
+        className="w-full h-11 bg-accent text-white font-inter font-semibold text-sm rounded-lg hover:bg-[#16A34A] hover:shadow-[0_0_30px_rgba(34,197,94,0.35)] transition-all duration-200 active:scale-[0.98] cursor-pointer"
       >
         Sifarişi tamamla
       </button>

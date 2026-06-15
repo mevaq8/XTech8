@@ -54,7 +54,7 @@ export default function ProductGallery({ product }: { product: Product }) {
               <img
                 src={img}
                 alt={`${product.name} - thumbnail ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain bg-[#f8fafc]"
               />
               {activeIndex === index && (
                 <div className="absolute inset-0 ring-2 ring-accent/30 rounded-xl" />

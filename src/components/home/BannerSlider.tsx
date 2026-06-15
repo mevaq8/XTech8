@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -6,24 +6,17 @@ import { supabase } from "@/lib/supabase";
 import { onBannerRefresh } from "@/lib/catalog-events";
 import type { Banner } from "@/lib/types";
 
-function BannerLink({ to, children }: { to: string | null; children: ReactNode }) {
-  if (!to) return <>{children}</>;
-
+function ActionLink({ to, children, className }: { to: string; children: string; className: string }) {
   if (to.startsWith("/") || to.startsWith("#")) {
     return (
-      <Link to={to} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
+      <Link to={to} className={className}>
         {children}
       </Link>
     );
   }
 
   return (
-    <a
-      href={to}
-      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
-      target="_blank"
-      rel="noreferrer"
-    >
+    <a href={to} className={className} target="_blank" rel="noreferrer">
       {children}
     </a>
   );
@@ -33,6 +26,7 @@ export default function BannerSlider() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
 
   const fetchBanners = useCallback(async () => {
     const { data, error } = await supabase
@@ -84,118 +78,125 @@ export default function BannerSlider() {
     return () => window.clearInterval(timer);
   }, [banners.length]);
 
-  const activeBanner = banners[activeIndex];
-
-  const hasText = useMemo(() => {
-    if (!activeBanner) return false;
-    return Boolean(activeBanner.category || activeBanner.title || activeBanner.subtitle);
-  }, [activeBanner]);
-
   if (loading) {
     return (
-      <section className="bg-bg pt-6">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-[420px] rounded-2xl bg-slate-100 animate-pulse" />
-        </div>
-      </section>
+      <div className="h-[250px] rounded-xl bg-slate-100 animate-pulse sm:h-[300px] lg:h-[420px]" />
     );
   }
+
+  const activeBanner = banners[activeIndex];
 
   if (!activeBanner) return null;
 
   const goToPrevious = () => setActiveIndex((index) => (index - 1 + banners.length) % banners.length);
   const goToNext = () => setActiveIndex((index) => (index + 1) % banners.length);
+  const secondaryLink = activeBanner.link_url || "/#products";
+
+  const handleTouchEnd = (clientX: number) => {
+    if (touchStart === null || banners.length <= 1) return;
+
+    const distance = touchStart - clientX;
+    if (Math.abs(distance) > 48) {
+      if (distance > 0) {
+        goToNext();
+      } else {
+        goToPrevious();
+      }
+    }
+    setTouchStart(null);
+  };
 
   return (
-    <section className="bg-bg pt-6">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-[#f3f4f6] shadow-sm">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeBanner.id}
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -24 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-            >
-              <BannerLink to={activeBanner.link_url}>
-                <div
-                  className={`grid min-h-[420px] md:min-h-[500px] ${
-                    hasText ? "grid-cols-1 md:grid-cols-[0.95fr_1.05fr]" : "grid-cols-1"
-                  }`}
-                >
-                  {hasText && (
-                    <div className="flex flex-col justify-center px-6 py-12 sm:px-10 lg:px-14">
-                      {activeBanner.category && (
-                        <p className="font-inter text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600 mb-4">
-                          {activeBanner.category}
-                        </p>
-                      )}
-                      {activeBanner.title && (
-                        <h1 className="font-sora text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-slate-950 max-w-xl">
-                          {activeBanner.title}
-                        </h1>
-                      )}
-                      {activeBanner.subtitle && (
-                        <p className="font-inter text-base sm:text-lg leading-relaxed text-slate-600 max-w-lg mt-5">
-                          {activeBanner.subtitle}
-                        </p>
-                      )}
-                      {activeBanner.link_url && (
-                        <span className="mt-8 inline-flex w-fit items-center rounded-lg bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition-colors">
-                          Etrafli bax
-                        </span>
-                      )}
-                    </div>
-                  )}
+    <div className="relative">
+      <div
+        className="relative h-[250px] overflow-hidden rounded-xl border border-slate-200 bg-[#f8fafc] shadow-sm sm:h-[300px] lg:h-[420px]"
+        onTouchStart={(event) => setTouchStart(event.touches[0]?.clientX ?? null)}
+        onTouchEnd={(event) => handleTouchEnd(event.changedTouches[0]?.clientX ?? 0)}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeBanner.id}
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -24 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="absolute inset-0"
+          >
+            <img
+              src={activeBanner.image_url}
+              alt={activeBanner.title || "XTech banner"}
+              className="h-full w-full object-contain object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/55 via-slate-950/25 to-transparent" />
+          </motion.div>
+        </AnimatePresence>
 
-                  <div className="relative flex min-h-[320px] items-center justify-center overflow-hidden px-6 py-10 sm:px-10">
-                    <img
-                      src={activeBanner.image_url}
-                      alt={activeBanner.title || activeBanner.category || "XTech banner"}
-                      className="max-h-[380px] w-full object-contain drop-shadow-[0_24px_45px_rgba(15,23,42,0.18)]"
-                    />
-                  </div>
-                </div>
-              </BannerLink>
-            </motion.div>
-          </AnimatePresence>
-
-          {banners.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={goToPrevious}
-                className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition hover:bg-white hover:text-slate-950"
-                aria-label="Evvelki banner"
+        <div className="relative z-10 flex h-full items-center px-5 sm:px-10 lg:px-14">
+          <div className="max-w-[500px]">
+            {activeBanner.title && (
+              <h2 className="font-sora font-bold text-xl sm:text-2xl lg:text-3xl text-white mb-3 leading-tight">
+                {activeBanner.title}
+              </h2>
+            )}
+            {activeBanner.subtitle && (
+              <p className="font-inter text-sm sm:text-base text-slate-200/90 mb-5 leading-relaxed">
+                {activeBanner.subtitle}
+              </p>
+            )}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <Link
+                to="/#products"
+                className="inline-flex items-center justify-center h-12 px-7 rounded-lg bg-accent text-white font-inter font-medium text-sm transition-all duration-300 hover:bg-[#16A34A] hover:shadow-[0_0_30px_rgba(34,197,94,0.35)] active:scale-[0.97]"
               >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={goToNext}
-                className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition hover:bg-white hover:text-slate-950"
-                aria-label="Novbeti banner"
+                Məhsullara bax
+              </Link>
+              <ActionLink
+                to={secondaryLink}
+                className="inline-flex items-center justify-center h-12 px-7 rounded-lg border border-white/60 text-white font-inter font-medium text-sm transition-all duration-300 hover:bg-white/10 active:scale-[0.97]"
               >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-              <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-2">
-                {banners.map((banner, index) => (
-                  <button
-                    key={banner.id}
-                    type="button"
-                    onClick={() => setActiveIndex(index)}
-                    className={`h-2.5 rounded-full transition-all ${
-                      index === activeIndex ? "w-8 bg-slate-950" : "w-2.5 bg-slate-400/70 hover:bg-slate-600"
-                    }`}
-                    aria-label={`${index + 1}-ci banner`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
+                Kampaniyalar
+              </ActionLink>
+            </div>
+          </div>
         </div>
+
+        {banners.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={goToPrevious}
+              className="absolute left-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-slate-900 shadow-md transition-all duration-200 hover:scale-105 hover:bg-slate-950 hover:text-white"
+              aria-label="Əvvəlki banner"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={goToNext}
+              className="absolute right-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-slate-900 shadow-md transition-all duration-200 hover:scale-105 hover:bg-slate-950 hover:text-white"
+              aria-label="Növbəti banner"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </>
+        )}
       </div>
-    </section>
+
+      {banners.length > 1 && (
+        <div className="mt-4 flex justify-center gap-2">
+          {banners.map((banner, index) => (
+            <button
+              key={banner.id}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              className={`h-2 rounded-full transition-all ${
+                index === activeIndex ? "w-6 bg-slate-950" : "w-2 bg-slate-300 hover:bg-slate-500"
+              }`}
+              aria-label={`${index + 1}-ci banner`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

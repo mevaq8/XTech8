@@ -17,9 +17,6 @@ interface OutletContext {
 }
 
 const schema = z.object({
-  category: z.string().optional(),
-  title: z.string().optional(),
-  subtitle: z.string().optional(),
   link_url: z.string().optional(),
   is_active: z.boolean().default(true),
 });
@@ -49,9 +46,6 @@ export function BannerForm() {
   } = useForm<FormData>({
     resolver: zodResolver(schema) as never,
     defaultValues: {
-      category: "",
-      title: "",
-      subtitle: "",
       link_url: "",
       is_active: true,
     },
@@ -65,15 +59,12 @@ export function BannerForm() {
 
       const { data } = await supabase.from("banners").select().eq("id", id).single();
       if (!data) {
-        addToast("Banner tapilmadi", "error");
+        addToast("Banner tapılmadı", "error");
         navigate("/admin/banners");
         return;
       }
 
       const banner = data as Banner;
-      setValue("category", banner.category || "");
-      setValue("title", banner.title || "");
-      setValue("subtitle", banner.subtitle || "");
       setValue("link_url", banner.link_url || "");
       setValue("is_active", banner.is_active);
       setImages([banner.image_url]);
@@ -91,21 +82,21 @@ export function BannerForm() {
       .limit(1)
       .maybeSingle();
 
-    return (((data as Pick<Banner, "sort_order"> | null)?.sort_order ?? 0) + 10);
+    return ((data as Pick<Banner, "sort_order"> | null)?.sort_order ?? 0) + 10;
   };
 
   const onSubmit = async (data: FormData) => {
     if (!images[0]) {
-      addToast("Banner sekli teleb olunur", "error");
+      addToast("Banner şəkli tələb olunur", "error");
       return;
     }
 
     setSaving(true);
     const payload = {
       image_url: images[0],
-      category: emptyToNull(data.category),
-      title: emptyToNull(data.title),
-      subtitle: emptyToNull(data.subtitle),
+      category: null,
+      title: null,
+      subtitle: null,
       link_url: emptyToNull(data.link_url),
       is_active: data.is_active,
     };
@@ -113,20 +104,20 @@ export function BannerForm() {
     if (isEdit && id) {
       const { error } = await supabase.from("banners").update(payload as never).eq("id", id);
       if (error) {
-        addToast("Banner yenilenmedi", "error");
+        addToast("Banner yenilənmədi", "error");
         setSaving(false);
         return;
       }
-      addToast("Banner yenilendi", "success");
+      addToast("Banner yeniləndi", "success");
     } else {
       const sortOrder = await getNextSortOrder();
       const { error } = await supabase.from("banners").insert([{ ...payload, sort_order: sortOrder }] as never);
       if (error) {
-        addToast("Banner elave olunmadi", "error");
+        addToast("Banner əlavə olunmadı", "error");
         setSaving(false);
         return;
       }
-      addToast("Banner elave edildi", "success");
+      addToast("Banner əlavə edildi", "success");
     }
 
     setSaving(false);
@@ -154,11 +145,11 @@ export function BannerForm() {
         className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Bannerlere qayit
+        Bannerlərə qayıt
       </button>
 
       <form onSubmit={handleSubmit(onSubmit as never)} className="space-y-6">
-        <FormSection title="Banner sekli">
+        <FormSection title="Banner şəkli">
           <ImageUploader
             images={images}
             onChange={setImages}
@@ -166,47 +157,18 @@ export function BannerForm() {
             folder="banners"
             maxFiles={1}
           />
-          {!images[0] && <p className="text-xs text-red-500 mt-3">Sekil mutleq yuklenmelidir.</p>}
+          {!images[0] && <p className="text-xs text-red-500 mt-3">Şəkil mütləq yüklənməlidir.</p>}
         </FormSection>
 
-        <FormSection title="Metn melumatlari">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Kateqoriya</label>
-              <input
-                {...register("category")}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm"
-                placeholder="Meselen: Yeni kolleksiya"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Link / URL</label>
-              <input
-                {...register("link_url")}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm"
-                placeholder="/#products ve ya https://..."
-              />
-              {errors.link_url && <p className="text-xs text-red-500 mt-1">{errors.link_url.message}</p>}
-            </div>
-          </div>
-
-          <div className="mt-5">
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Basliq</label>
+        <FormSection title="Link məlumatları">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Link / URL</label>
             <input
-              {...register("title")}
+              {...register("link_url")}
               className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm"
-              placeholder="Banner basligi"
+              placeholder="/#products və ya https://..."
             />
-          </div>
-
-          <div className="mt-5">
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Alt metn</label>
-            <textarea
-              {...register("subtitle")}
-              rows={3}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm resize-none"
-              placeholder="Qisa aciqlama"
-            />
+            {errors.link_url && <p className="text-xs text-red-500 mt-1">{errors.link_url.message}</p>}
           </div>
         </FormSection>
 
@@ -229,7 +191,7 @@ export function BannerForm() {
             onClick={() => navigate("/admin/banners")}
             className="px-6 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors font-medium text-sm"
           >
-            Legv et
+            Ləğv et
           </button>
           <button
             type="submit"
@@ -237,7 +199,7 @@ export function BannerForm() {
             className="px-6 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors font-medium text-sm disabled:opacity-50 flex items-center gap-2"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            {saving ? "Yadda saxlanir..." : "Yadda saxla"}
+            {saving ? "Yadda saxlanır..." : "Yadda saxla"}
           </button>
         </div>
       </form>

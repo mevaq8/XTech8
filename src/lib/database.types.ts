@@ -38,6 +38,7 @@ export interface Database {
           name: string;
           slug: string;
           icon: string;
+          icon_url: string | null;
           sort_order: number;
           is_active: boolean;
           created_at: string;
@@ -47,6 +48,7 @@ export interface Database {
           name: string;
           slug: string;
           icon?: string;
+          icon_url?: string | null;
           sort_order?: number;
           is_active?: boolean;
           created_at?: string;
@@ -56,6 +58,7 @@ export interface Database {
           name?: string;
           slug?: string;
           icon?: string;
+          icon_url?: string | null;
           sort_order?: number;
           is_active?: boolean;
           created_at?: string;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -8,6 +8,8 @@ import {
   Tags,
   X,
   Loader2,
+  Upload,
+  ImageIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Category, Product, Toast } from "@/lib/types";
@@ -20,6 +22,9 @@ import { emitCatalogRefresh } from "@/lib/catalog-events";
 interface OutletContext {
   addToast: (message: string, type: Toast["type"]) => void;
 }
+
+const ICON_BUCKET = "category-icons";
+const ICON_FOLDER = "categories";
 
 export function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -34,10 +39,13 @@ export function Categories() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [icon, setIcon] = useState("Tag");
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
+  const [iconUploading, setIconUploading] = useState(false);
   const [sortOrder, setSortOrder] = useState(0);
   const [isActive, setIsActive] = useState(true);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { addToast } = useOutletContext<OutletContext>();
 
   useEffect(() => {
@@ -67,6 +75,7 @@ export function Categories() {
       setName(category.name);
       setSlug(category.slug);
       setIcon(category.icon);
+      setIconUrl(category.icon_url ?? null);
       setSortOrder(category.sort_order);
       setIsActive(category.is_active);
       setSlugManuallyEdited(true);
@@ -75,11 +84,55 @@ export function Categories() {
       setName("");
       setSlug("");
       setIcon("Tag");
+      setIconUrl(null);
       setSortOrder(categories.length > 0 ? Math.max(...categories.map((c) => c.sort_order)) + 10 : 10);
       setIsActive(true);
       setSlugManuallyEdited(false);
     }
     setModalOpen(true);
+  };
+
+  const handleIconUpload = async (file: File) => {
+    if (!file) return;
+    setIconUploading(true);
+
+    const ext = file.name.split(".").pop() || "png";
+    const path = `${ICON_FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(ICON_BUCKET)
+      .upload(path, file);
+
+    if (uploadError) {
+      addToast("İkon yüklənmədi", "error");
+      setIconUploading(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from(ICON_BUCKET).getPublicUrl(path);
+    if (data?.publicUrl) {
+      // Delete old icon if replacing
+      if (iconUrl && editingCategory) {
+        const oldPath = iconUrl.split(`${ICON_BUCKET}/`).pop();
+        if (oldPath) {
+          await supabase.storage.from(ICON_BUCKET).remove([oldPath]);
+        }
+      }
+      setIconUrl(data.publicUrl);
+      addToast("İkon yükləndi", "success");
+    }
+
+    setIconUploading(false);
+  };
+
+  const handleIconDelete = async () => {
+    if (!iconUrl) return;
+    const path = iconUrl.split(`${ICON_BUCKET}/`).pop();
+    if (path) {
+      await supabase.storage.from(ICON_BUCKET).remove([path]);
+    }
+    setIconUrl(null);
+    addToast("İkon silindi", "success");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,6 +148,7 @@ export function Categories() {
       name: name.trim(),
       slug: slug.trim(),
       icon,
+      icon_url: iconUrl,
       sort_order: sortOrder,
       is_active: isActive,
     };
@@ -131,6 +185,14 @@ export function Categories() {
       addToast(`Bu kateqoriyaya aid ${count} məhsul var. Əvvəlcə məhsulları silin.`, "error");
       setDeleteModal(null);
       return;
+    }
+
+    // Delete icon from storage if exists
+    if (deleteModal.icon_url) {
+      const path = deleteModal.icon_url.split(`${ICON_BUCKET}/`).pop();
+      if (path) {
+        await supabase.storage.from(ICON_BUCKET).remove([path]);
+      }
     }
 
     setDeleteLoading(true);
@@ -187,7 +249,16 @@ export function Categories() {
             { key: "name", header: "Ad" },
             { key: "slug", header: "Slug" },
             { key: "sort_order", header: "Sira", render: (c) => c.sort_order },
-            { key: "icon", header: "İkon", render: (c) => <span className="text-slate-500">{c.icon}</span> },
+            {
+              key: "icon",
+              header: "İkon",
+              render: (c) =>
+                c.icon_url ? (
+                  <img src={c.icon_url} alt={c.name} className="w-6 h-6 object-contain rounded" />
+                ) : (
+                  <span className="text-slate-400 text-xs">—</span>
+                ),
+            },
             { key: "count", header: "Məhsul sayı", render: (c) => getProductCount(c.id) },
             {
               key: "status",
@@ -281,8 +352,67 @@ export function Categories() {
                   />
                 </div>
 
+                {/* Icon Upload */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">İkon adı (Lucide)</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">İkon</label>
+                  <div className="flex items-center gap-3">
+                    {iconUrl ? (
+                      <div className="relative group">
+                        <img
+                          src={iconUrl}
+                          alt="Preview"
+                          className="w-12 h-12 object-contain rounded-lg border border-slate-200 bg-slate-50"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleIconDelete}
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                          title="İkonu sil"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center">
+                        <ImageIcon className="w-5 h-5 text-slate-400" />
+                      </div>
+                    )}
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/svg+xml,image/png,image/webp,image/jpeg"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleIconUpload(file);
+                        if (e.target) e.target.value = "";
+                      }}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={iconUploading}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    >
+                      {iconUploading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      {iconUploading ? "Yüklənir..." : iconUrl ? "İkonu dəyiş" : "İkon yüklə"}
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    SVG, PNG, WEBP (max 2MB). İkon mecburi deyil.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Lucide ikon adı (fallback)
+                  </label>
                   <input
                     value={icon}
                     onChange={(e) => setIcon(e.target.value)}
@@ -319,7 +449,7 @@ export function Categories() {
                   </button>
                   <button
                     type="submit"
-                    disabled={formLoading}
+                    disabled={formLoading || iconUploading}
                     className="px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors text-sm font-medium disabled:opacity-50 flex items-center gap-2"
                   >
                     {formLoading && <Loader2 className="w-4 h-4 animate-spin" />}
