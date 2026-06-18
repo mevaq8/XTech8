@@ -36,10 +36,10 @@ export default function ProductGrid() {
   }, [products, searchQuery, activeCategory]);
 
   return (
-    <section id="products" className="py-12 bg-bg">
-      <div className="container-main lg:flex lg:items-start lg:gap-6">
+    <section id="products" className="py-7 bg-bg">
+      <div className="container-main lg:flex lg:items-start lg:gap-5">
         {/* Desktop sidebar — single source of truth from categories array */}
-        <aside className="hidden lg:block lg:sticky lg:top-24 lg:w-[240px] lg:shrink-0 lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto">
+        <aside className="hidden lg:block lg:w-[220px] lg:shrink-0">
           <nav className="space-y-1">
             {categories.map((cat) => (
               <button
@@ -72,7 +72,7 @@ export default function ProductGrid() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
               >
                 {Array.from({ length: 12 }).map((_, i) => (
                   <SkeletonCard key={i} />
