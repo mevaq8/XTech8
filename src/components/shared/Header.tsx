@@ -16,22 +16,21 @@ export default function Header() {
       </div>
 
       <div className="container-main">
-        <div className="flex h-16 items-center justify-between gap-3">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="font-sora font-bold text-base text-white">X</span>
+        <div className="flex h-16 items-center gap-3 sm:gap-5 lg:h-20">
+          <Link to="/" className="flex shrink-0 items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <span className="font-sora text-base font-bold text-white">X</span>
             </div>
-            <span className="font-sora font-bold text-xl text-primary">XTech</span>
+            <span className="hidden font-sora text-xl font-bold text-primary sm:inline">XTech</span>
           </Link>
 
-          <div className="hidden lg:flex flex-1 justify-center max-w-[400px] mx-auto">
-            <SearchBar />
-          </div>
-
-          <div className="flex items-center gap-1">
-            <div className="lg:hidden mr-1">
+          <div className="min-w-0 flex-1">
+            <div className="mx-auto w-full max-w-3xl">
               <SearchBar />
             </div>
+          </div>
+
+          <div className="flex shrink-0 items-center">
             <CartIcon iconClassName="text-primary" />
           </div>
         </div>
