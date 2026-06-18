@@ -51,8 +51,8 @@ export default function ValueStrip() {
             </div>
           </div>
 
-          {/* Perk grid */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Perk grid — desktop only */}
+          <div className="hidden grid-cols-2 gap-3 lg:grid">
             {perks.map((perk) => (
               <div
                 key={perk.title}
