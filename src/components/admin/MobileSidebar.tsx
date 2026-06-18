@@ -7,13 +7,11 @@ import {
   Settings,
   Laptop,
   X,
-  Images,
 } from "lucide-react";
 
 const navItems = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { path: "/admin/products", label: "Məhsullar", icon: Package },
-  { path: "/admin/banners", label: "Bannerler", icon: Images },
   { path: "/admin/categories", label: "Kateqoriyalar", icon: Tags },
   { path: "/admin/settings", label: "Parametrlər", icon: Settings },
 ];

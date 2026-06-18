@@ -1,4 +1,4 @@
-import HeroSection from "@/components/home/HeroSection";
+import ValueStrip from "@/components/home/ValueStrip";
 import SuperOffers from "@/components/home/SuperOffers";
 import CategoryNav from "@/components/home/CategoryNav";
 import ProductGrid from "@/components/home/ProductGrid";
@@ -10,7 +10,7 @@ import CustomerConfidence from "@/components/home/CustomerConfidence";
 export default function HomePage() {
   return (
     <main>
-      <HeroSection />
+      <ValueStrip />
       <SuperOffers />
       <CategoryNav />
       <ProductGrid />

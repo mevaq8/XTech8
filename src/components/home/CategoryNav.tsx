@@ -7,7 +7,7 @@ export default function CategoryNav() {
   const { categories } = useCatalog();
 
   return (
-    <section className="lg:hidden py-2 bg-bg sticky top-[96px] z-40">
+    <section className="lg:hidden py-2 bg-bg">
       <div className="container-main">
         <div className="category-scroll flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:-mx-6 sm:px-6">
           {categories.map((cat) => (

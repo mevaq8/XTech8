@@ -12,8 +12,6 @@ const pageTitles: Record<string, string> = {
   "/admin": "Dashboard",
   "/admin/products": "Məhsullar",
   "/admin/products/new": "Yeni Məhsul",
-  "/admin/banners": "Bannerler",
-  "/admin/banners/new": "Yeni Banner",
   "/admin/categories": "Kateqoriyalar",
   "/admin/settings": "Parametrlər",
 };
@@ -48,9 +46,6 @@ export function AdminLayout() {
   const getTitle = () => {
     if (location.pathname.startsWith("/admin/products/") && location.pathname.includes("/edit")) {
       return "Məhsulu Redaktə Et";
-    }
-    if (location.pathname.startsWith("/admin/banners/") && location.pathname.includes("/edit")) {
-      return "Banneri Redakte Et";
     }
     return pageTitles[location.pathname] || "Admin";
   };

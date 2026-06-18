@@ -36,18 +36,6 @@ export interface Product {
   category?: Category;
 }
 
-export interface Banner {
-  id: string;
-  image_url: string;
-  category: string | null;
-  title: string | null;
-  subtitle: string | null;
-  link_url: string | null;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string;
-}
-
 export interface OrderItem {
   product_id: string;
   name: string;

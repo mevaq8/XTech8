@@ -13,8 +13,6 @@ import { Login } from "@/pages/admin/Login";
 import { Dashboard } from "@/pages/admin/Dashboard";
 import { Products } from "@/pages/admin/Products";
 import { ProductForm } from "@/pages/admin/ProductForm";
-import { Banners } from "@/pages/admin/Banners";
-import { BannerForm } from "@/pages/admin/BannerForm";
 import { Categories } from "@/pages/admin/Categories";
 import { Settings } from "@/pages/admin/Settings";
 
@@ -49,9 +47,6 @@ export default function App() {
                   <Route path="products" element={<Products />} />
                   <Route path="products/new" element={<ProductForm />} />
                   <Route path="products/:slug/edit" element={<ProductForm />} />
-                  <Route path="banners" element={<Banners />} />
-                  <Route path="banners/new" element={<BannerForm />} />
-                  <Route path="banners/:id/edit" element={<BannerForm />} />
                   <Route path="categories" element={<Categories />} />
                   <Route path="settings" element={<Settings />} />
                 </Route>
