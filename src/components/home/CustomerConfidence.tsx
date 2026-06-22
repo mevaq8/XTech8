@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Star, Users, ThumbsUp } from "lucide-react";
+import { Users, ThumbsUp } from "lucide-react";
 
 export default function CustomerConfidence() {
   return (
@@ -15,10 +15,9 @@ export default function CustomerConfidence() {
           <h2 className="font-sora font-semibold text-xl md:text-2xl text-primary mb-2">Müştərilərimizin etimadı</h2>
           <p className="font-inter text-sm text-slate-500">Minlərlə müştərinin seçimi</p>
         </motion.div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
             { icon: Users, value: "5000+", label: "Məmnun müştəri" },
-            { icon: Star, value: "4.9", label: "Ortalama reytinq" },
             { icon: ThumbsUp, value: "100%", label: "Orijinal məhsul zəmanəti" },
           ].map((stat, i) => (
             <motion.div

@@ -28,28 +28,33 @@ export default function ProductPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="min-h-screen bg-bg pt-6 pb-12"
+      className="min-h-screen bg-bg pt-4 pb-8 md:pt-6 md:pb-12"
     >
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          <ProductGallery product={product} />
-          <div className="space-y-6">
+        {/* Desktop: tighter two-column layout; mobile: unchanged stacked layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 lg:items-start">
+          {/* Gallery — on desktop cap height to avoid excessive space */}
+          <div className="lg:sticky lg:top-24">
+            <ProductGallery product={product} />
+          </div>
+
+          {/* Info + Specs side by side on desktop */}
+          <div className="space-y-4">
             <ProductInfo product={product} />
             <ProductSpecs specs={product.specs} />
+
+            {/* Description inline on desktop to avoid extra scroll */}
+            {product.description ? (
+              <div className="bg-white border border-slate-100 rounded-2xl p-5 lg:p-6">
+                <h3 className="font-sora font-semibold text-primary text-base mb-3">Məhsul haqqında</h3>
+                <div
+                  className="tiptap font-inter text-sm text-slate-600 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
-
-        {product.description ? (
-          <div className="mt-8">
-            <div className="bg-white border border-slate-100 rounded-2xl p-6 md:p-8">
-              <h3 className="font-sora font-semibold text-primary text-lg mb-4">Mehsul haqqinda</h3>
-              <div
-                className="tiptap font-inter text-sm text-slate-600 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: product.description }}
-              />
-            </div>
-          </div>
-        ) : null}
 
         <RelatedProducts currentProduct={product} />
       </div>
