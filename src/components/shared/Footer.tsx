@@ -91,6 +91,11 @@ export default function Footer() {
                     Səbət
                   </Link>
                 </li>
+                <li>
+                  <Link to="/haqqimizda" className="text-sm font-inter text-slate-400 hover:text-white transition-colors">
+                    Haqqımızda
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

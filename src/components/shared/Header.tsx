@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Phone, Menu, X, Home, Tag, Info, MessageCircle, ChevronRight } from "lucide-react";
 import SearchBar from "./SearchBar";
@@ -10,7 +10,14 @@ export default function Header() {
   const { settings } = useSiteSettings();
   const contactPhone = readSetting(settings, "contact_phone", "+994503201156");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function handleNavClick(e: React.MouseEvent, to: string, hash?: string) {
     e.preventDefault();
@@ -33,30 +40,36 @@ export default function Header() {
   }[] = [
     { label: "Ana səhifə", to: "/", icon: Home },
     { label: "Kateqoriyalar", to: "/", hash: "products", icon: Tag },
-    { label: "Haqqımızda", to: "/", icon: Info },
+    { label: "Haqqımızda", to: "/haqqimizda", icon: Info },
     { label: "Əlaqə", href: `tel:${normalizePhoneForLink(contactPhone)}`, icon: MessageCircle },
   ];
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-bg/90 backdrop-blur-xl transition-all duration-300">
+      <header className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "border-b border-slate-200 bg-white/95 backdrop-blur-xl shadow-sm"
+          : "border-b border-white/10 bg-[#0B1120]/95 backdrop-blur-xl"
+      }`}>
         {/* Top bar — desktop: phone number | mobile: logo + brand name */}
-        <div className="border-b border-slate-200/70 bg-white/65">
+        <div className={`border-b ${scrolled ? "border-slate-100" : "border-white/10"}`}>
           <div className="container-main flex h-8 items-center">
             {/* Mobile: logo + brand name */}
             <Link to="/" className="flex items-center gap-2 lg:hidden">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-accent">
                 <span className="font-sora text-xs font-bold text-white">X</span>
               </div>
-              <span className="font-sora text-base font-bold text-primary">XTech</span>
+              <span className={`font-sora text-base font-bold ${scrolled ? "text-slate-800" : "text-white"}`}>XTech</span>
             </Link>
 
             {/* Desktop: phone number aligned right */}
             <a
               href={`tel:${normalizePhoneForLink(contactPhone)}`}
-              className="hidden lg:inline-flex ml-auto items-center gap-2 text-xs font-semibold text-primary transition-colors hover:text-accent"
+              className={`hidden lg:inline-flex ml-auto items-center gap-2 text-xs font-semibold transition-colors ${
+                scrolled ? "text-slate-500 hover:text-slate-800" : "text-slate-300 hover:text-white"
+              }`}
             >
-              <Phone className="h-3.5 w-3.5 text-secondary" />
+              <Phone className={`h-3.5 w-3.5 ${scrolled ? "text-slate-400" : "text-slate-400"}`} />
               <span>{contactPhone}</span>
             </a>
           </div>
@@ -71,7 +84,9 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => setMenuOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-primary transition-colors hover:bg-slate-100 lg:hidden"
+                className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors lg:hidden ${
+                  scrolled ? "text-slate-700 hover:bg-slate-100" : "text-white hover:bg-white/10"
+                }`}
                 aria-label="Menyu"
               >
                 <Menu className="h-5 w-5" />
@@ -79,21 +94,21 @@ export default function Header() {
 
               {/* Logo — desktop only */}
               <Link to="/" className="hidden lg:flex shrink-0 items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
                   <span className="font-sora text-base font-bold text-white">X</span>
                 </div>
-                <span className="font-sora text-xl font-bold text-primary">XTech</span>
+                <span className={`font-sora text-xl font-bold ${scrolled ? "text-slate-800" : "text-white"}`}>XTech</span>
               </Link>
             </div>
 
             <div className="min-w-0 flex-1">
               <div className="mx-auto w-full max-w-3xl">
-                <SearchBar />
+                <SearchBar dark={!scrolled} />
               </div>
             </div>
 
             <div className="flex shrink-0 items-center">
-              <CartIcon iconClassName="text-primary" />
+              <CartIcon iconClassName={scrolled ? "text-slate-700" : "text-white"} />
             </div>
           </div>
         </div>

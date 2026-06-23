@@ -1,10 +1,88 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, ArrowUpDown } from "lucide-react";
 import { useFilter } from "@/store/filter-store";
 import { useCatalog } from "@/store/catalog-store";
 import ProductCard from "@/components/shared/ProductCard";
 import CategoryIcon from "@/components/shared/CategoryIcon";
+
+type SortOption = "default" | "price-asc" | "price-desc" | "name-asc" | "name-desc";
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "price-asc", label: "Qiymət: aşağıdan yuxarı" },
+  { value: "price-desc", label: "Qiymət: yuxarıdan aşağı" },
+  { value: "name-asc", label: "Ad: A → Z" },
+  { value: "name-desc", label: "Ad: Z → A" },
+];
+
+function SortDropdown({
+  sortBy,
+  setSortBy,
+  align = "left",
+}: {
+  sortBy: SortOption;
+  setSortBy: (v: SortOption) => void;
+  align?: "left" | "right";
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const activeSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label;
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`inline-flex items-center gap-2 h-10 rounded-lg border bg-white font-inter text-sm transition-colors px-3 ${
+          sortBy !== "default"
+            ? "border-accent text-accent"
+            : "border-slate-200 text-slate-600 hover:border-accent hover:text-accent"
+        }`}
+        aria-label="Sırala"
+      >
+        <ArrowUpDown className="h-4 w-4 shrink-0" />
+        {activeSortLabel && <span className="hidden sm:inline">{activeSortLabel}</span>}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.12 }}
+            className={`absolute top-12 z-50 w-60 rounded-xl border border-slate-100 bg-white shadow-xl overflow-hidden ${
+              align === "right" ? "right-0" : "left-0"
+            }`}
+          >
+            {SORT_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => { setSortBy(sortBy === o.value ? "default" : o.value); setOpen(false); }}
+                className={`flex w-full items-center px-4 py-2.5 text-left font-inter text-sm transition-colors ${
+                  sortBy === o.value
+                    ? "bg-accent/10 text-accent font-semibold"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                {o.label}
+                {sortBy === o.value && <span className="ml-auto text-accent">✓</span>}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function SkeletonCard() {
   return (
@@ -25,9 +103,10 @@ export default function ProductGrid() {
   const { searchQuery, activeCategory, setActiveCategory } = useFilter();
   const { products, categories, loading, error } = useCatalog();
   const [filterOpen, setFilterOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>("default");
 
   const filtered = useMemo(() => {
-    return products.filter((p) => {
+    const list = products.filter((p) => {
       const matchesCategory = activeCategory === "all" || p.category === activeCategory;
       const matchesSearch =
         searchQuery === "" ||
@@ -35,7 +114,15 @@ export default function ProductGrid() {
         p.shortDescription.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [products, searchQuery, activeCategory]);
+
+    if (sortBy === "price-asc") return [...list].sort((a, b) => a.price - b.price);
+    if (sortBy === "price-desc") return [...list].sort((a, b) => b.price - a.price);
+    if (sortBy === "name-asc") return [...list].sort((a, b) => a.name.localeCompare(b.name, "az"));
+    if (sortBy === "name-desc") return [...list].sort((a, b) => b.name.localeCompare(a.name, "az"));
+    return list;
+  }, [products, searchQuery, activeCategory, sortBy]);
+
+  const activeSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label;
 
   const activeCategoryName = categories.find((c) => c.slug === activeCategory)?.name;
 
@@ -71,22 +158,27 @@ export default function ProductGrid() {
 
           <div className="min-w-0 flex-1">
             {/* Mobile filter bar */}
-            <div className="flex items-center justify-between mb-4 lg:hidden">
-              <p className="text-sm font-medium text-slate-500 font-inter">
-                {activeCategoryName && activeCategory !== "all" ? (
-                  <span className="text-accent font-semibold">{activeCategoryName}</span>
-                ) : (
-                  "Bütün məhsullar"
-                )}
-              </p>
+            <div className="flex items-center gap-2 mb-4 lg:hidden">
+              <span className="flex-1 truncate font-inter text-sm font-semibold text-slate-500">
+                {activeCategoryName && activeCategory !== "all" ? activeCategoryName : "Bütün məhsullar"}
+              </span>
+              <SortDropdown sortBy={sortBy} setSortBy={setSortBy} align="right" />
               <button
                 type="button"
                 onClick={() => setFilterOpen(true)}
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-accent hover:text-accent transition-colors"
+                className="inline-flex items-center gap-2 h-10 px-4 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-accent hover:text-accent transition-colors shrink-0"
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 <span>Filter</span>
               </button>
+            </div>
+
+            {/* Desktop sort bar */}
+            <div className="hidden lg:flex items-center justify-between mb-4">
+              <span className="font-inter text-sm font-semibold text-slate-500">
+                {activeCategoryName && activeCategory !== "all" ? activeCategoryName : "Bütün məhsullar"}
+              </span>
+              <SortDropdown sortBy={sortBy} setSortBy={setSortBy} align="right" />
             </div>
 
             <AnimatePresence mode="wait">

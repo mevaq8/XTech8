@@ -5,9 +5,12 @@ import { CatalogProvider } from "@/store/catalog-store";
 import { SiteSettingsProvider } from "@/store/site-settings-store";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
+import WhatsAppFloat from "@/components/shared/WhatsAppFloat";
 import HomePage from "@/pages/HomePage";
 import ProductPage from "@/pages/ProductPage";
 import CartPage from "@/pages/CartPage";
+import AboutPage from "@/pages/AboutPage";
+import NotFound from "@/pages/NotFound";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Login } from "@/pages/admin/Login";
 import { Dashboard } from "@/pages/admin/Dashboard";
@@ -24,6 +27,7 @@ function StoreLayout() {
         <Outlet />
       </div>
       <Footer />
+      <WhatsAppFloat />
     </div>
   );
 }
@@ -40,6 +44,8 @@ export default function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/product/:slug" element={<ProductPage />} />
                   <Route path="/cart" element={<CartPage />} />
+                  <Route path="/haqqimizda" element={<AboutPage />} />
+                  <Route path="*" element={<NotFound />} />
                 </Route>
                 <Route path="/admin/login" element={<Login />} />
                 <Route path="/admin" element={<AdminLayout />}>
@@ -50,7 +56,6 @@ export default function App() {
                   <Route path="categories" element={<Categories />} />
                   <Route path="settings" element={<Settings />} />
                 </Route>
-                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </BrowserRouter>
           </CatalogProvider>
